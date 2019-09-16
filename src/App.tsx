@@ -167,18 +167,8 @@ const App: React.FC = () => {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
-  // firebase.auth().onAuthStateChanged((user) => {
-  //     console.log('in auth');
-  //     setOpen(!user)
-  // })
   
-  useEffect(() => {
-    firebase.auth().onAuthStateChanged((user) => {
-      console.log('in auth');
-      setOpen(!user)
-    })
-  })
+  useEffect(() => firebase.auth().onAuthStateChanged((user) => setOpen(!user)))
 
   const handleClose = () => setOpen(false);
 
