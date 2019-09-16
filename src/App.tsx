@@ -11,6 +11,8 @@ import ListItemText from '@material-ui/core/ListItemText'
 import TextField from '@material-ui/core/TextField'
 import { Grid, Typography, Container } from '@material-ui/core';
 
+import Clipboard from 'react-clipboard.js'
+
 firebase.initializeApp(firebaseConfig)
 const firestore = firebase.firestore()
 const messageCollection = firestore.collection('message')
@@ -50,17 +52,26 @@ const MessageList: React.FC = () => {
     messageCollection.add({ time: Date.now(), message: inputMessage }).then(getMessageList).then(setMessageList)
   }
 
+  const clipboardStyle = {
+    width: '100%',
+    'text-align': 'left',
+    border: 'none',
+    background: 'border-box'
+  }
+
   return (
     <div>
       <Typography variant="h3" gutterBottom >Message List</Typography>
       <List>
       {messageList.map((data: firebase.firestore.DocumentData) => 
         <ListItem button key={data.time}>
-          <ListItemText
-            primary={data.message}
-            secondary={new Date(data.time).toLocaleString()}
-            onClick={() => navigator.clipboard.writeText(data.message)}
-          />
+          <Clipboard data-clipboard-text={data.message} style={clipboardStyle}>
+            <ListItemText
+              id={data.time}
+              primary={data.message}
+              secondary={new Date(data.time).toLocaleString()}
+            />
+          </Clipboard>
         </ListItem>)}
       </List>
 
