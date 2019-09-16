@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState} from 'react';
 
 import firebase from './Firebase'
 
@@ -44,13 +44,12 @@ const fileCollection = firestore.collection('file')
 
 const storage = firebase.storage()
 
-let messageInit = true;
-let fileInit = true;
 let count = 0;
 
-const MessageList: React.FC = () => {
+const MessageList: React.FC<any> = ({signedIn}) => {
   const classes = useStyles()
 
+  const [init, setInit] = useState(true)
   const [messageList, setMessageList] = useState<firebase.firestore.DocumentData>([])
   const [inputMessage, setInputMessage] = useState('')
   
@@ -63,8 +62,8 @@ const MessageList: React.FC = () => {
     return messageList.reverse();
   }
   
-  if (messageInit) {
-    messageInit = false;
+  if (init && signedIn) {
+    setInit(false)
     getMessageList().then(setMessageList)
   }
 
@@ -102,7 +101,8 @@ const MessageList: React.FC = () => {
   )
 }
 
-const FileList: React.FC = () => {
+const FileList: React.FC<any> = ({signedIn}) => {
+  const [init, setInit] = useState(true)
   const [fileList, setFileList] = useState<firebase.firestore.DocumentData>([])
   const [inputFile, setInputFile] = useState<File>(new File([], ''))
   
@@ -115,8 +115,8 @@ const FileList: React.FC = () => {
     return fileList.reverse();
   }
   
-  if (fileInit) {
-    fileInit = false;
+  if (init && signedIn) {
+    setInit(false)
     getFileList().then(setFileList)
   }
 
@@ -163,14 +163,18 @@ const FileList: React.FC = () => {
 
 const App: React.FC = () => {
   const classes = useStyles()
-  const [open, setOpen] = React.useState(true);
 
+  const [init, setInit] = useState(true);
+  const [signedIn, setSignedIn] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   
-  useEffect(() => firebase.auth().onAuthStateChanged((user) => setOpen(!user)))
-
-  const handleClose = () => setOpen(false);
+  if (init) {
+    firebase.auth().onAuthStateChanged((user) => {
+      setInit(false)
+      setSignedIn(!!user)
+    })
+  }
 
   const updateEmail = (e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value);
   const updatePassword = (e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value);
@@ -182,7 +186,7 @@ const App: React.FC = () => {
 
   return (
     <Container>
-      <Modal open={open} onClose={handleClose}>
+      <Modal open={!signedIn}>
         <form onSubmit={signIn} className={classes.modal}>
           <TextField label="username" onChange={updateEmail} />
           <TextField label="password" onChange={updatePassword} />
@@ -191,10 +195,10 @@ const App: React.FC = () => {
       </Modal>
       <Grid container spacing={5} >
         <Grid item md={12} lg={6} >
-          <MessageList />
+          <MessageList signedIn={signedIn} />
         </Grid>
         <Grid item md={12} lg={6} >
-          <FileList />
+          <FileList signedIn={signedIn} />
         </Grid>
       </Grid>
     </Container>
