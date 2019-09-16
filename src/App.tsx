@@ -1,15 +1,12 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 
-import firebase from 'firebase/app'
-import firebaseConfig from './FirebaseConfig';
-import 'firebase/firestore'
-import 'firebase/storage'
+import firebase from './Firebase'
 
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
 import ListItemText from '@material-ui/core/ListItemText'
 import TextField from '@material-ui/core/TextField'
-import { Grid, Typography, Container, Button } from '@material-ui/core';
+import { Grid, Typography, Container, Button, Modal } from '@material-ui/core';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 
 import Clipboard from 'react-clipboard.js'
@@ -29,12 +26,18 @@ const useStyles = makeStyles((theme: Theme) =>
       textAlign: 'left',
       border: 'none',
       background: 'border-box'
-    }
+    },
+    modal: {
+      position: 'absolute',
+      width: 400,
+      backgroundColor: theme.palette.background.paper,
+      border: '2px solid #000',
+      boxShadow: theme.shadows[5],
+      padding: theme.spacing(2, 4, 3),
+    },
   }),
 );
 
-
-firebase.initializeApp(firebaseConfig)
 const firestore = firebase.firestore()
 const messageCollection = firestore.collection('message')
 const fileCollection = firestore.collection('file')
@@ -159,15 +162,50 @@ const FileList: React.FC = () => {
 }
 
 const App: React.FC = () => {
+  const classes = useStyles()
+  const [open, setOpen] = React.useState(true);
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  // firebase.auth().onAuthStateChanged((user) => {
+  //     console.log('in auth');
+  //     setOpen(!user)
+  // })
+  
+  useEffect(() => {
+    firebase.auth().onAuthStateChanged((user) => {
+      console.log('in auth');
+      setOpen(!user)
+    })
+  })
+
+  const handleClose = () => setOpen(false);
+
+  const updateEmail = (e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value);
+  const updatePassword = (e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value);
+
+  function signIn(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    firebase.auth().signInWithEmailAndPassword(email, password).catch(alert)
+  }
+
   return (
     <Container>
-    <Grid container >
-      <Grid item md={12} lg={6} >
-        <MessageList />
-      </Grid>
-      <Grid item md={12} lg={6} >
-        <FileList />
-      </Grid>
+      <Modal open={open} onClose={handleClose}>
+        <form onSubmit={signIn} className={classes.modal}>
+          <TextField label="username" onChange={updateEmail} />
+          <TextField label="password" onChange={updatePassword} />
+          <Button type="submit" color='primary' className={classes.submitButton}>Log In</Button>
+        </form>
+      </Modal>
+      <Grid container spacing={5} >
+        <Grid item md={12} lg={6} >
+          <MessageList />
+        </Grid>
+        <Grid item md={12} lg={6} >
+          <FileList />
+        </Grid>
       </Grid>
     </Container>
   );
