@@ -9,7 +9,7 @@ import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
 import ListItemText from '@material-ui/core/ListItemText'
 import TextField from '@material-ui/core/TextField'
-import { Grid, Typography, Container } from '@material-ui/core';
+import { Grid, Typography, Container, Button } from '@material-ui/core';
 
 import Clipboard from 'react-clipboard.js'
 
@@ -43,13 +43,13 @@ const MessageList: React.FC = () => {
   }
 
   function updateMessageInput(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.value.length)
-      setInputMessage(e.target.value)
+    setInputMessage(e.target.value)
   }
 
   function uploadMessage(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    messageCollection.add({ time: Date.now(), message: inputMessage }).then(getMessageList).then(setMessageList)
+    if(inputMessage)
+      messageCollection.add({ time: Date.now(), message: inputMessage }).then(getMessageList).then(setMessageList)
   }
 
   const clipboardStyle = {
@@ -76,11 +76,9 @@ const MessageList: React.FC = () => {
       </List>
 
       <form onSubmit={uploadMessage}>
-        <TextField onChange={updateMessageInput} label="New Message" fullWidth/>
-        <button type="submit" hidden/>
+        <TextField onChange={updateMessageInput} label="New Message" />
+        <Button variant="contained" color="primary" type="submit">Send</Button>
       </form>
-
-      
     </div>
   )
 }
