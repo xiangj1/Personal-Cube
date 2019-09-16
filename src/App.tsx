@@ -10,8 +10,29 @@ import ListItem from '@material-ui/core/ListItem'
 import ListItemText from '@material-ui/core/ListItemText'
 import TextField from '@material-ui/core/TextField'
 import { Grid, Typography, Container, Button } from '@material-ui/core';
+import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 
 import Clipboard from 'react-clipboard.js'
+
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    submitButton: {
+      margin: '0 1%',
+      verticalAlign: 'bottom',
+      width: '18%'
+    },
+    inputMessage: {
+      width: '80%'
+    },
+    clipboard: {
+      width: '100%',
+      textAlign: 'left',
+      border: 'none',
+      background: 'border-box'
+    }
+  }),
+);
+
 
 firebase.initializeApp(firebaseConfig)
 const firestore = firebase.firestore()
@@ -25,6 +46,8 @@ let fileInit = true;
 let count = 0;
 
 const MessageList: React.FC = () => {
+  const classes = useStyles()
+
   const [messageList, setMessageList] = useState<firebase.firestore.DocumentData>([])
   const [inputMessage, setInputMessage] = useState('')
   
@@ -32,7 +55,7 @@ const MessageList: React.FC = () => {
     if(++count > 50) alert('STOP!!!!!')
     const messageList: firebase.firestore.DocumentData[] = []
     const querySnapshot = await messageCollection.orderBy('time', 'desc').limit(5).get()
-    querySnapshot.forEach(doc => messageList.push(doc.data()));
+    querySnapshot.forEach(doc => messageList.push(doc.data()))
   
     return messageList.reverse();
   }
@@ -52,20 +75,13 @@ const MessageList: React.FC = () => {
       messageCollection.add({ time: Date.now(), message: inputMessage }).then(getMessageList).then(setMessageList)
   }
 
-  const clipboardStyle = {
-    width: '100%',
-    'text-align': 'left',
-    border: 'none',
-    background: 'border-box'
-  }
-
   return (
     <div>
       <Typography variant="h3" gutterBottom >Message List</Typography>
       <List>
       {messageList.map((data: firebase.firestore.DocumentData) => 
         <ListItem button key={data.time}>
-          <Clipboard data-clipboard-text={data.message} style={clipboardStyle}>
+          <Clipboard data-clipboard-text={data.message} className={classes.clipboard}>
             <ListItemText
               id={data.time}
               primary={data.message}
@@ -76,8 +92,8 @@ const MessageList: React.FC = () => {
       </List>
 
       <form onSubmit={uploadMessage}>
-        <TextField onChange={updateMessageInput} label="New Message" />
-        <Button variant="contained" color="primary" type="submit">Send</Button>
+        <TextField onChange={updateMessageInput} label="New Message" className={classes.inputMessage} />
+        <Button variant="contained" color="primary" type="submit" className={classes.submitButton}>Send</Button>
       </form>
     </div>
   )
