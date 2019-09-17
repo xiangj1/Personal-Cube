@@ -6,13 +6,25 @@ import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
 import ListItemText from '@material-ui/core/ListItemText'
 import TextField from '@material-ui/core/TextField'
-import { Grid, Typography, Container, Button, Modal } from '@material-ui/core';
+import { Grid, Typography, Container, Button, Modal, AppBar, Toolbar, IconButton } from '@material-ui/core';
+import MenuIcon from '@material-ui/icons/Menu'
+import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 
 import Clipboard from 'react-clipboard.js'
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
+    menuButton: {
+      marginRight: theme.spacing(2),
+    },
+    title: {
+      flexGrow: 1,
+    },
+    userInfo: {
+      display: 'flex',
+      alignItems: 'center'
+    },
     submitButton: {
       margin: '0 1%',
       verticalAlign: 'bottom',
@@ -28,8 +40,10 @@ const useStyles = makeStyles((theme: Theme) =>
       background: 'border-box'
     },
     modal: {
+      top: '20%',
+      left: '35%',
       position: 'absolute',
-      width: 400,
+      width: '30%',
       backgroundColor: theme.palette.background.paper,
       border: '2px solid #000',
       boxShadow: theme.shadows[5],
@@ -45,6 +59,34 @@ const fileCollection = firestore.collection('file')
 const storage = firebase.storage()
 
 let count = 0;
+
+const NavBar: React.FC<any> = ({ signedIn, username }) => {
+  const classes = useStyles()
+
+  function signOut() {
+    firebase.auth().signOut().catch(alert)
+  }
+
+  return (
+    <AppBar position="static">
+        <Toolbar>
+          <IconButton edge="start" color="inherit" aria-label="menu" className={classes.menuButton} >
+            <MenuIcon />
+          </IconButton>
+          <Typography variant="h6" className={classes.title}>
+            Personal Cube
+          </Typography>
+          {signedIn && (
+          <div className={classes.userInfo}>
+            <Typography variant="body1">{username}</Typography>
+            <IconButton onClick={signOut} color="inherit"><ExitToAppIcon /></IconButton>
+          </div>
+          )}
+        </Toolbar>
+      </AppBar>
+
+  )
+}
 
 const MessageList: React.FC<any> = ({signedIn}) => {
   const classes = useStyles()
@@ -165,14 +207,14 @@ const App: React.FC = () => {
   const classes = useStyles()
 
   const [init, setInit] = useState(true);
-  const [signedIn, setSignedIn] = useState(true);
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   
   if (init) {
     firebase.auth().onAuthStateChanged((user) => {
       setInit(false)
-      setSignedIn(!!user)
+      setUsername(user ? user.email || '' : '')
     })
   }
 
@@ -185,23 +227,26 @@ const App: React.FC = () => {
   }
 
   return (
-    <Container>
-      <Modal open={!signedIn}>
-        <form onSubmit={signIn} className={classes.modal}>
-          <TextField label="username" onChange={updateEmail} />
-          <TextField label="password" onChange={updatePassword} />
-          <Button type="submit" color='primary' className={classes.submitButton}>Log In</Button>
-        </form>
-      </Modal>
-      <Grid container spacing={5} >
-        <Grid item md={12} lg={6} >
-          <MessageList signedIn={signedIn} />
+    <div>
+      <NavBar signedIn={!!username} username={username} />
+      <Container>
+        <Modal open={!username}>
+          <form onSubmit={signIn} className={classes.modal}>
+            <TextField label="username" onChange={updateEmail} />
+            <TextField label="password" onChange={updatePassword} />
+            <Button type="submit" color='primary' className={classes.submitButton}>Log In</Button>
+          </form>
+        </Modal>
+        <Grid container spacing={5} >
+          <Grid item md={12} lg={6} >
+            <MessageList signedIn={!!username} />
+          </Grid>
+          <Grid item md={12} lg={6} >
+            <FileList signedIn={!!username} />
+          </Grid>
         </Grid>
-        <Grid item md={12} lg={6} >
-          <FileList signedIn={signedIn} />
-        </Grid>
-      </Grid>
-    </Container>
+      </Container>
+    </div>
   );
 }
 
