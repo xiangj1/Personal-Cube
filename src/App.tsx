@@ -69,22 +69,21 @@ const NavBar: React.FC<any> = ({ signedIn, username }) => {
 
   return (
     <AppBar position="static">
-        <Toolbar>
-          <IconButton edge="start" color="inherit" aria-label="menu" className={classes.menuButton} >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" className={classes.title}>
-            Personal Cube
-          </Typography>
-          {signedIn && (
-          <div className={classes.userInfo}>
-            <Typography variant="body1">{username}</Typography>
-            <IconButton onClick={signOut} color="inherit"><ExitToAppIcon /></IconButton>
-          </div>
-          )}
-        </Toolbar>
-      </AppBar>
-
+      <Toolbar>
+        <IconButton edge="start" color="inherit" aria-label="menu" className={classes.menuButton} >
+          <MenuIcon />
+        </IconButton>
+        <Typography variant="h6" className={classes.title}>
+          Personal Cube
+        </Typography>
+        {signedIn && (
+        <div className={classes.userInfo}>
+          <Typography variant="body1">{username}</Typography>
+          <IconButton onClick={signOut} color="inherit"><ExitToAppIcon /></IconButton>
+        </div>
+        )}
+      </Toolbar>
+    </AppBar>
   )
 }
 
